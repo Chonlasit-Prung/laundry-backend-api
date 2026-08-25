@@ -1,0 +1,91 @@
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using LaundryApi.Data;
+using LaundryApi.Models;
+
+namespace LaundryApi.Controllers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrdersController : ControllerBase
+    {
+        private readonly AppDbContext _context;
+
+        public OrdersController(AppDbContext context)
+        {
+            _context = context;
+        }
+
+        // GET: api/orders (ดึงข้อมูลออเดอร์ทั้งหมด)
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
+        {
+            return await _context.Orders.OrderByDescending(o => o.CreatedAt).ToListAsync();
+        }
+
+        // POST: api/orders (สร้างออเดอร์ใหม่)
+        [HttpPost]
+        public async Task<ActionResult<Order>> CreateOrder(Order order)
+        {
+            _context.Orders.Add(order);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetOrders), new { id = order.Id }, order);
+        }
+
+        // POST: api/orders/bulk (สร้างออเดอร์ทีละหลายรายการ)
+        [HttpPost("bulk")]
+        public async Task<IActionResult> CreateOrdersBulk([FromBody] List<Order> orders)
+        {
+            if (orders == null || !orders.Any())
+            {
+                return BadRequest(new { message = "กรุณาส่งข้อมูลออเดอร์อย่างน้อย 1 รายการ" });
+            }
+
+            await _context.Orders.AddRangeAsync(orders);
+            await _context.SaveChangesAsync();
+
+            return CreatedAtAction(nameof(GetOrders), new { count = orders.Count }, new { message = $"บันทึกข้อมูลสำเร็จ {orders.Count} รายการ", data = orders });
+        }
+
+        // DELETE: api/orders/5 (ลบออเดอร์ตาม ID ที่ระบุ)
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteOrder(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound(new { message = $"ไม่พบออเดอร์รหัส {id}" });
+            }
+
+            _context.Orders.Remove(order);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = $"ลบออเดอร์รหัส {id} เรียบร้อยแล้ว" });
+        }
+
+        // PATCH: api/orders/11/status (อัปเดตเฉพาะสถานะ)
+        [HttpPatch("{id}/status")]
+        public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateStatusDto dto)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound(new { message = $"ไม่พบออเดอร์รหัส {id}" });
+            }
+
+            order.Status = dto.Status;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { message = "อัปเดตสถานะสำเร็จ", data = order });
+        }
+    }
+}
+
+// DTO สำหรับรับค่า Status จาก Request Body
+public class UpdateStatusDto
+{
+    public string Status { get; set; } = string.Empty;
+}
