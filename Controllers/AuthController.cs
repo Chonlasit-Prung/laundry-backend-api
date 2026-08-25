@@ -33,8 +33,17 @@ namespace LaundryApi.Controllers
                 return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
             }
 
-            // ตรวจสอบรหัสผ่าน plaintext กับ BCrypt hash ใน DB
+            // หากใน DB ยังไม่ได้เป็น BCrypt Hash หรือต้องการ Reset รหัสผ่านเป็นค่าใน DTO
+            // เช็คกรณีเปรียบเทียบแบบตรงๆ หรือตรวจด้วย BCrypt
             bool isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+
+            // [Fallback] ถ้าเช็ค BCrypt ไม่ผ่าน แต่ใน DB มีค่าเดิมเป็นข้อความธรรมดา ให้ Auto-Hash บันทึกใหม่
+            if (!isValid && setting.ShopPassword == dto.Password)
+            {
+                setting.ShopPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                await _context.SaveChangesAsync();
+                isValid = true;
+            }
 
             if (!isValid)
             {
