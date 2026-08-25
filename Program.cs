@@ -3,6 +3,14 @@ using LaundryApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// --- แก้ไขจุดนี้: ปิด reloadOnChange เพื่อแก้ปัญหา Linux inotify limit บน Render ---
+builder.Configuration.Sources.Clear();
+builder.Configuration
+    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
+    .AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: false)
+    .AddEnvironmentVariables();
+
+// 1. ตั้งค่า CORS
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -22,11 +30,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 2. เปิดใช้งาน Swagger ทุก Environment (เพื่อให้เปิดทดสอบบน Render ได้)
+// 2. เปิดใช้งาน Swagger ทุก Environment
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// 3. เรียกใช้งาน CORS Policy ที่ตั้งชื่อไว้ว่า "AllowAll"
+// 3. เรียกใช้งาน CORS
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
