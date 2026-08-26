@@ -1,10 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "bGJZBj9K4mQ=",
+  "dgSpecHash": "c8ssz6uC8LQ=",
   "success": true,
   "projectFilePath": "C:\\Users\\uSeR\\Desktop\\LaundryBackend\\LaundryApi\\LaundryApi.csproj",
   "expectedPackageFiles": [
-    "C:\\Users\\uSeR\\.nuget\\packages\\bcrypt.net-next\\4.2.0\\bcrypt.net-next.4.2.0.nupkg.sha512",
+    "C:\\Users\\uSeR\\.nuget\\packages\\bcrypt.net-core\\1.6.0\\bcrypt.net-core.1.6.0.nupkg.sha512",
     "C:\\Users\\uSeR\\.nuget\\packages\\humanizer.core\\2.14.1\\humanizer.core.2.14.1.nupkg.sha512",
     "C:\\Users\\uSeR\\.nuget\\packages\\microsoft.bcl.asyncinterfaces\\7.0.0\\microsoft.bcl.asyncinterfaces.7.0.0.nupkg.sha512",
     "C:\\Users\\uSeR\\.nuget\\packages\\microsoft.build.framework\\17.8.3\\microsoft.build.framework.17.8.3.nupkg.sha512",
