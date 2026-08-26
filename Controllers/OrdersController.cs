@@ -1,4 +1,3 @@
-//OrdersController.cs
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaundryApi.Data;
@@ -21,7 +20,25 @@ namespace LaundryApi.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
         {
-            return await _context.Orders.OrderByDescending(o => o.CreatedAt).ToListAsync();
+            // ใช้ AsNoTracking เพื่อลด overhead สำหรับข้อมูล อ่านอย่างเดียว (Read-only)
+            return await _context.Orders
+                .AsNoTracking()
+                .OrderByDescending(o => o.CreatedAt)
+                .ToListAsync();
+        }
+
+        // GET: api/orders/5 (ดึงข้อมูลออเดอร์รายรายการ)
+        [HttpGet("{id}")]
+        public async Task<ActionResult<Order>> GetOrder(int id)
+        {
+            var order = await _context.Orders.FindAsync(id);
+
+            if (order == null)
+            {
+                return NotFound(new { message = $"ไม่พบออเดอร์รหัส {id}" });
+            }
+
+            return order;
         }
 
         // POST: api/orders (สร้างออเดอร์ใหม่)
@@ -31,7 +48,8 @@ namespace LaundryApi.Controllers
             _context.Orders.Add(order);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetOrders), new { id = order.Id }, order);
+            // ชี้ URI ไปยัง GetOrder (Single Entity)
+            return CreatedAtAction(nameof(GetOrder), new { id = order.Id }, order);
         }
 
         // POST: api/orders/bulk (สร้างออเดอร์ทีละหลายรายการ)
@@ -70,6 +88,11 @@ namespace LaundryApi.Controllers
         [HttpPatch("{id}/status")]
         public async Task<IActionResult> UpdateOrderStatus(int id, [FromBody] UpdateStatusDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.Status))
+            {
+                return BadRequest(new { message = "กรุณาระบุสถานะที่ต้องการอัปเดต" });
+            }
+
             var order = await _context.Orders.FindAsync(id);
 
             if (order == null)
@@ -83,10 +106,10 @@ namespace LaundryApi.Controllers
             return Ok(new { message = "อัปเดตสถานะสำเร็จ", data = order });
         }
     }
-}
 
-// DTO สำหรับรับค่า Status จาก Request Body
-public class UpdateStatusDto
-{
-    public string Status { get; set; } = string.Empty;
+    // DTO สำหรับรับค่า Status จาก Request Body
+    public class UpdateStatusDto
+    {
+        public string Status { get; set; } = string.Empty;
+    }
 }
