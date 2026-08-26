@@ -10,10 +10,13 @@ namespace LaundryApi.Controllers
     public class AuthController : ControllerBase
     {
         private readonly AppDbContext _context;
+        private readonly ILogger<AuthController> _logger;
 
-        public AuthController(AppDbContext context)
+        // ฉีด ILogger เข้ามาเพื่อใช้ในการบันทึก Log
+        public AuthController(AppDbContext context, ILogger<AuthController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         // POST: api/auth/verify-password
@@ -38,10 +41,13 @@ namespace LaundryApi.Controllers
 
                 try
                 {
+                    // ตรวจสอบรหัสผ่านผ่าน BCrypt
                     isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
                 }
-                catch
+                catch (Exception ex)
                 {
+                    // บันทึก Log เมื่อรหัสผ่านผิด หรือรูปแบบ Hash ใน DB ไม่ถูกต้อง
+                    _logger.LogError(ex, "BCrypt verification failed or hash format is invalid.");
                     isValid = false;
                 }
 
@@ -54,6 +60,7 @@ namespace LaundryApi.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Database or server error occurred.");
                 return StatusCode(500, new { success = false, message = $"Server Error: {ex.Message}" });
             }
         }

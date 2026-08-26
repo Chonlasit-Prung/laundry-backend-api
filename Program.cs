@@ -1,3 +1,4 @@
+//Program.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using LaundryApi.Data;
