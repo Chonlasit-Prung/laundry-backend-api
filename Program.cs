@@ -15,15 +15,11 @@ builder.Configuration
 // ตั้งค่า CORS
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowFrontend", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
-        policy.WithOrigins(
-                "https://laundry-frontend-ivory.vercel.app/", // เปลี่ยนเป็น Domain จริงของ Frontend                // (ถ้ามี) Custom Domain
-                "http://localhost:4200"                     // เพิ่มไว้สำหรับเทสบนเครื่อง Local (เช่น Vite/React/Vue)
-              )
+        policy.AllowAnyOrigin()
               .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials(); // ใส่เพิ่มกรณีมีการส่ง Cookie หรือ Credentials
+              .AllowAnyHeader();
     });
 });
 
