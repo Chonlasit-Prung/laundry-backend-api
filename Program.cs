@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using LaundryApi.Data;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 // --- แก้ไขจุดนี้: ปิด reloadOnChange เพื่อแก้ปัญหา Linux inotify limit บน Render ---
