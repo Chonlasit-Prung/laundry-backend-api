@@ -37,25 +37,8 @@ namespace LaundryApi.Controllers
                     return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
                 }
 
-                bool isValid = false;
-
-                // 🔹 1. ตรวจสอบเปรียบเทียบแบบ Plain Text ก่อน
-                if (setting.ShopPassword == dto.Password)
-                {
-                    isValid = true;
-                }
-                else
-                {
-                    // 🔹 2. หากไม่ตรง ค่อยตรวจสอบแบบ BCrypt Hash
-                    try
-                    {
-                        isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
-                }
+                // 🔹 เปรียบเทียบรหัสผ่านแบบ Plain Text ตรงๆ ไม่ผ่าน BCrypt
+                bool isValid = (setting.ShopPassword == dto.Password);
 
                 if (!isValid)
                 {
