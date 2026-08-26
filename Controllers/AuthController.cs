@@ -36,22 +36,13 @@ namespace LaundryApi.Controllers
 
                 bool isValid = false;
 
-                // ตรวจสอบว่าเป็น BCrypt Hash หรือไม่ (ขึ้นต้นด้วย $2)
-                if (setting.ShopPassword.StartsWith("$2"))
+                try
                 {
-                    try
-                    {
-                        isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
-                    }
-                    catch
-                    {
-                        isValid = false;
-                    }
+                    isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
                 }
-                else
+                catch
                 {
-                    // กรณีใน DB เก็บเป็น Plain Text ตรงๆ (เช่น "249918")
-                    isValid = (dto.Password == setting.ShopPassword);
+                    isValid = false;
                 }
 
                 if (!isValid)
@@ -63,7 +54,6 @@ namespace LaundryApi.Controllers
             }
             catch (Exception ex)
             {
-                // ดักจับกรณี DB Error หรือ Table หาไม่เจอ
                 return StatusCode(500, new { success = false, message = $"Server Error: {ex.Message}" });
             }
         }
