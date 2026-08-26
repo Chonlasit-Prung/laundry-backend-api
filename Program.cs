@@ -4,7 +4,7 @@ using LaundryApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// --- แก้ไขจุดนี้: ปิด reloadOnChange เพื่อแก้ปัญหา Linux inotify limit บน Render ---
+// 🔹 ปิด reloadOnChange เพื่อป้องกัน Crash (Exit code 139) บน Linux/Render
 builder.Configuration.Sources.Clear();
 builder.Configuration
     .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
