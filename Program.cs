@@ -26,7 +26,17 @@ builder.Services.AddCors(options =>
 // 🔹 2. ปรับตรงนี้เพื่อสั่งข้าม PendingModelChangesWarning
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+    {
+        // 🔹 1. เพิ่มเวลารอเชื่อมต่อเป็น 60 วินาที
+        npgsqlOptions.CommandTimeout(60); 
+        // 🔹 2. เปิดระบบพยายามเชื่อมต่อใหม่หากเจอปัญหา Network ชั่วคราว (Retry)
+        npgsqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(10),
+            errorCodesToAdd: null);
+    });
+
     options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
 });
 
