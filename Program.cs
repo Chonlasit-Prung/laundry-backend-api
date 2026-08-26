@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using LaundryApi.Data;
 using Microsoft.EntityFrameworkCore.Diagnostics;
-
+using LaundryApi.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,14 +22,12 @@ builder.Services.AddCors(options =>
     });
 });
 
-// 🔹 2. ปรับตรงนี้เพื่อสั่งข้าม PendingModelChangesWarning
+// 2. เชื่อมต่อ Database พร้อมระบบ Retry & Timeout
 builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
     {
-        // 🔹 1. เพิ่มเวลารอเชื่อมต่อเป็น 60 วินาที
         npgsqlOptions.CommandTimeout(60); 
-        // 🔹 2. เปิดระบบพยายามเชื่อมต่อใหม่หากเจอปัญหา Network ชั่วคราว (Retry)
         npgsqlOptions.EnableRetryOnFailure(
             maxRetryCount: 5,
             maxRetryDelay: TimeSpan.FromSeconds(10),
@@ -46,18 +43,11 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 🔹 ทำการ Auto-Migrate Database เมื่อ App เริ่มทำงานบน Render
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
-
-// 2. เปิดใช้งาน Swagger ทุก Environment
+// 3. เปิดใช้งาน Swagger ทุก Environment
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// 3. เรียกใช้งาน CORS
+// 4. เรียกใช้งาน CORS
 app.UseCors("AllowAll");
 
 app.UseAuthorization();
