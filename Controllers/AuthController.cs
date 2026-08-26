@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LaundryApi.Data;
-using BCrypt.Net;
 
 namespace LaundryApi.Controllers
 {
@@ -12,14 +11,13 @@ namespace LaundryApi.Controllers
         private readonly AppDbContext _context;
         private readonly ILogger<AuthController> _logger;
 
-        // ฉีด ILogger เข้ามาเพื่อใช้ในการบันทึก Log
         public AuthController(AppDbContext context, ILogger<AuthController> logger)
         {
             _context = context;
             _logger = logger;
         }
 
-        // POST: api/auth/verify-password
+        // POST: api/Auth/verify-password
         [HttpPost("verify-password")]
         public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordDto dto)
         {
@@ -30,6 +28,7 @@ namespace LaundryApi.Controllers
 
             try
             {
+                // ดึงข้อมูลการตั้งค่าแถวแรก
                 var setting = await _context.Settings.FirstOrDefaultAsync();
 
                 if (setting == null || string.IsNullOrEmpty(setting.ShopPassword))
@@ -37,10 +36,8 @@ namespace LaundryApi.Controllers
                     return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
                 }
 
-                // 🔹 เปรียบเทียบรหัสผ่านแบบ Plain Text ตรงๆ ไม่ผ่าน BCrypt
-                bool isValid = (setting.ShopPassword == dto.Password);
-
-                if (!isValid)
+                // เปรียบเทียบแบบ Plain Text ตรงๆ ประมวลผลได้เร็วระดับ ms
+                if (setting.ShopPassword.Trim() != dto.Password.Trim())
                 {
                     return Unauthorized(new { success = false, message = "รหัสผ่านไม่ถูกต้อง" });
                 }
@@ -49,7 +46,7 @@ namespace LaundryApi.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Database or server error occurred.");
+                _logger.LogError(ex, "เกิดข้อผิดพลาดในการตรวจสอบรหัสผ่าน");
                 return StatusCode(500, new { success = false, message = $"Server Error: {ex.Message}" });
             }
         }
