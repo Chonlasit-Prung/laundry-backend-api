@@ -71,17 +71,23 @@ namespace LaundryApi.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteOrder(int id)
         {
-            var order = await _context.Orders.FindAsync(id);
-
-            if (order == null)
+            try
             {
-                return NotFound(new { message = $"ไม่พบออเดอร์รหัส {id}" });
+                var rowsAffected = await _context.Orders
+                    .Where(o => o.Id == id)
+                    .ExecuteDeleteAsync();
+
+                if (rowsAffected == 0)
+                {
+                    return NotFound(new { message = $"ไม่พบรายการรหัส {id}" });
+                }
+
+                return Ok(new { message = "ลบข้อมูลสำเร็จ" });
             }
-
-            _context.Orders.Remove(order);
-            await _context.SaveChangesAsync();
-
-            return Ok(new { message = $"ลบออเดอร์รหัส {id} เรียบร้อยแล้ว" });
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "เกิดข้อผิดพลาดในการลบข้อมูล", detail = ex.Message });
+            }
         }
 
         // PATCH: api/orders/11/status (อัปเดตเฉพาะสถานะ)
