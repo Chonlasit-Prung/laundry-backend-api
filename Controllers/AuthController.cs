@@ -39,16 +39,22 @@ namespace LaundryApi.Controllers
 
                 bool isValid = false;
 
-                try
+                // 🔹 1. ตรวจสอบเปรียบเทียบแบบ Plain Text ก่อน
+                if (setting.ShopPassword == dto.Password)
                 {
-                    // ตรวจสอบรหัสผ่านผ่าน BCrypt
-                    isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+                    isValid = true;
                 }
-                catch (Exception ex)
+                else
                 {
-                    // บันทึก Log เมื่อรหัสผ่านผิด หรือรูปแบบ Hash ใน DB ไม่ถูกต้อง
-                    _logger.LogError(ex, "BCrypt verification failed or hash format is invalid.");
-                    isValid = false;
+                    // 🔹 2. หากไม่ตรง ค่อยตรวจสอบแบบ BCrypt Hash
+                    try
+                    {
+                        isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+                    }
+                    catch
+                    {
+                        isValid = false;
+                    }
                 }
 
                 if (!isValid)
