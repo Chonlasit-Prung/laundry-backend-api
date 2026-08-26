@@ -1,7 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using LaundryApi.Data;
 
-
 var builder = WebApplication.CreateBuilder(args);
 
 // 🔹 ปิด reloadOnChange เพื่อป้องกัน Crash (Exit code 139) บน Linux/Render
@@ -29,8 +28,14 @@ builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-
 var app = builder.Build();
+
+// 🔹 ทำการ Auto-Migrate Database เมื่อ App เริ่มทำงานบน Render
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    db.Database.Migrate();
+}
 
 // 2. เปิดใช้งาน Swagger ทุก Environment
 app.UseSwagger();

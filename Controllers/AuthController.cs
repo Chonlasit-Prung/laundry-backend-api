@@ -25,32 +25,47 @@ namespace LaundryApi.Controllers
                 return BadRequest(new { success = false, message = "กรุณากรอกรหัสผ่าน" });
             }
 
-            var setting = await _context.Settings.FirstOrDefaultAsync();
-
-            if (setting == null)
-            {
-                return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
-            }
-
-            bool isValid = false;
-
             try
             {
-                // ตรวจสอบรหัสผ่านกับ Hash ใน DB
-                isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
-            }
-            catch
-            {
-                // หากค่าใน DB ไม่ใช่ Hash Format ที่ถูกต้อง จะตกมาที่นี่แทนการเกิด 500 Error
-                isValid = false;
-            }
+                var setting = await _context.Settings.FirstOrDefaultAsync();
 
-            if (!isValid)
-            {
-                return Unauthorized(new { success = false, message = "รหัสผ่านไม่ถูกต้อง" });
-            }
+                if (setting == null || string.IsNullOrEmpty(setting.ShopPassword))
+                {
+                    return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
+                }
 
-            return Ok(new { success = true, message = "รหัสผ่านถูกต้อง" });
+                bool isValid = false;
+
+                // ตรวจสอบว่าเป็น BCrypt Hash หรือไม่ (ขึ้นต้นด้วย $2)
+                if (setting.ShopPassword.StartsWith("$2"))
+                {
+                    try
+                    {
+                        isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+                    }
+                    catch
+                    {
+                        isValid = false;
+                    }
+                }
+                else
+                {
+                    // กรณีใน DB เก็บเป็น Plain Text ตรงๆ (เช่น "249918")
+                    isValid = (dto.Password == setting.ShopPassword);
+                }
+
+                if (!isValid)
+                {
+                    return Unauthorized(new { success = false, message = "รหัสผ่านไม่ถูกต้อง" });
+                }
+
+                return Ok(new { success = true, message = "รหัสผ่านถูกต้อง" });
+            }
+            catch (Exception ex)
+            {
+                // ดักจับกรณี DB Error หรือ Table หาไม่เจอ
+                return StatusCode(500, new { success = false, message = $"Server Error: {ex.Message}" });
+            }
         }
     }
 
