@@ -25,7 +25,6 @@ namespace LaundryApi.Controllers
                 return BadRequest(new { success = false, message = "กรุณากรอกรหัสผ่าน" });
             }
 
-            // ดึงข้อมูลรหัสผ่านจากแถวแรกในตาราง settings
             var setting = await _context.Settings.FirstOrDefaultAsync();
 
             if (setting == null)
@@ -33,16 +32,29 @@ namespace LaundryApi.Controllers
                 return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
             }
 
-            // หากใน DB ยังไม่ได้เป็น BCrypt Hash หรือต้องการ Reset รหัสผ่านเป็นค่าใน DTO
-            // เช็คกรณีเปรียบเทียบแบบตรงๆ หรือตรวจด้วย BCrypt
-            bool isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+            bool isValid = false;
 
-            // [Fallback] ถ้าเช็ค BCrypt ไม่ผ่าน แต่ใน DB มีค่าเดิมเป็นข้อความธรรมดา ให้ Auto-Hash บันทึกใหม่
-            if (!isValid && setting.ShopPassword == dto.Password)
+            // เช็คว่าค่าใน DB เป็น BCrypt Format (ขึ้นต้นด้วย $2a$, $2b$, $2y$) หรือไม่
+            if (setting.ShopPassword.StartsWith("$2"))
             {
-                setting.ShopPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
-                await _context.SaveChangesAsync();
-                isValid = true;
+                try
+                {
+                    isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+                }
+                catch
+                {
+                    isValid = false;
+                }
+            }
+            else
+            {
+                // หากใน DB เป็นข้อความธรรมดา ให้เทียบตรงๆ แล้วแปลงเป็น Hash บันทึกเก็บทันที
+                if (setting.ShopPassword == dto.Password)
+                {
+                    setting.ShopPassword = BCrypt.Net.BCrypt.HashPassword(dto.Password);
+                    await _context.SaveChangesAsync();
+                    isValid = true;
+                }
             }
 
             if (!isValid)
