@@ -6,7 +6,6 @@ C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\LaundryApi.dep
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\LaundryApi.runtimeconfig.json
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\LaundryApi.dll
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\LaundryApi.pdb
-C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\BCrypt-Net-Next.dll
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\Humanizer.dll
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\Microsoft.Build.Locator.dll
@@ -122,3 +121,5 @@ C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\obj\Debug\net10.0\refint\Laundry
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\obj\Debug\net10.0\LaundryApi.pdb
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\obj\Debug\net10.0\LaundryApi.genruntimeconfig.cache
 C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\obj\Debug\net10.0\ref\LaundryApi.dll
+C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\bin\Debug\net10.0\BCrypt.Net-Core.dll
+C:\Users\uSeR\Desktop\LaundryBackend\LaundryApi\obj\Debug\net10.0\LaundryApi.sourcelink.json
