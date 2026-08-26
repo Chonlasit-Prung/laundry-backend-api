@@ -1,5 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using LaundryApi.Data;
+using Microsoft.EntityFrameworkCore.Diagnostics;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,8 +23,12 @@ builder.Services.AddCors(options =>
     });
 });
 
+// 🔹 2. ปรับตรงนี้เพื่อสั่งข้าม PendingModelChangesWarning
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection"));
+    options.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
+});
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
