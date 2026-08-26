@@ -20,13 +20,11 @@ namespace LaundryApi.Controllers
         [HttpPost("verify-password")]
         public async Task<IActionResult> VerifyPassword([FromBody] VerifyPasswordDto dto)
         {
-            // 1. ตรวจสอบว่ามีการส่งรหัสผ่านเข้ามาหรือไม่
             if (string.IsNullOrWhiteSpace(dto.Password))
             {
                 return BadRequest(new { success = false, message = "กรุณากรอกรหัสผ่าน" });
             }
 
-            // 2. ดึงข้อมูล Settings จาก Database
             var setting = await _context.Settings.FirstOrDefaultAsync();
 
             if (setting == null)
@@ -34,16 +32,24 @@ namespace LaundryApi.Controllers
                 return NotFound(new { success = false, message = "ไม่พบข้อมูลการตั้งค่าในระบบ" });
             }
 
-            // 3. นำรหัสผ่าน Plaintext ที่ส่งมาจาก Frontend/Swagger ไป Verify กับ BCrypt Hash ใน DB
-            bool isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+            bool isValid = false;
 
-            // 4. ถ้ารหัสผ่านไม่ตรง Return 401
+            try
+            {
+                // ตรวจสอบรหัสผ่านกับ Hash ใน DB
+                isValid = BCrypt.Net.BCrypt.Verify(dto.Password, setting.ShopPassword);
+            }
+            catch
+            {
+                // หากค่าใน DB ไม่ใช่ Hash Format ที่ถูกต้อง จะตกมาที่นี่แทนการเกิด 500 Error
+                isValid = false;
+            }
+
             if (!isValid)
             {
                 return Unauthorized(new { success = false, message = "รหัสผ่านไม่ถูกต้อง" });
             }
 
-            // 5. ถ้ารหัสผ่านถูกต้อง Return 200 OK
             return Ok(new { success = true, message = "รหัสผ่านถูกต้อง" });
         }
     }
